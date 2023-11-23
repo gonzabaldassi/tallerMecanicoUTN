@@ -1,6 +1,7 @@
 package com.TP.TallerMecanico.gestor;
 
 import com.TP.TallerMecanico.entidad.*;
+import com.TP.TallerMecanico.interfaz.IOrdenDao;
 import com.TP.TallerMecanico.servicio.*;
 
 import jakarta.validation.Valid;
@@ -48,6 +49,9 @@ public class GestorOrden {
 
     @Autowired
     private IModeloService modeloService;
+
+    @Autowired
+    private IOrdenDao ordenDao;
     
     //Listar todos los ordenes cuando la URL sea /ordenes
     @GetMapping("/ordenes")
@@ -61,7 +65,8 @@ public class GestorOrden {
         //var orden = ordenService.listarOrdenes();
         
         if ((marcaId != null) || (modeloId != null || numero!=null || fechaDocumento!=null)) {
-            ordenes = ordenService.filtrarOrdenes(marcaId,modeloId, numero, fechaDocumento);
+            OrdenFiltrador ordenFiltrador = new OrdenFiltrador(ordenDao, ordenService);
+            ordenes = ordenFiltrador.filtrarOrdenes(marcaId, modeloId, numero, fechaDocumento);
         }else {
             // Si no se enviaron parámetros de búsqueda, lista todos los vehículos
             ordenes= ordenService.listarOrdenes();
