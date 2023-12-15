@@ -23,6 +23,7 @@
                     <a class="nav-link active" aria-current="page" th:href="@{/ordenes}">Ordenes</a>
                     <a class="nav-link" th:href="@{/servicios}">Servicios</a>
                     <a class="nav-link" th:href="@{/tecnicos}">Tecnicos</a>
+                    <a class="nav-link" th:href="@{/estadisticas}">Estadisticas</a>
                 </div>
             </div>
         </div>
@@ -35,7 +36,11 @@
         <form class="d-flex" method="get">
             <div>
                 <a th:href="@{/agregarOrden}" class="btn btn-primary me-5 mt-3">Agregar</a>
+                <a th:href="@{/ordenesEliminadas}" class="btn btn-warning me-5 mt-3">Ver eliminadas</a>
             </div>
+        </form>
+
+        <form class="d-flex" method="get">
 
             <input class="form-select me-2 mt-3" type="number" name="numero" placeholder="Ingrese el numero de la orden"
              aria-label="Search" th:value="${numero}">
@@ -52,7 +57,16 @@
                     th:selected="${modelo.idModelo == idModelo}"></option>
             </select>
 
-            <input class="form-control me-2 mt-3" type="date" name="fechaDocumento" placeholder="Fecha Orden" aria-label="Search" th:value="${fechaDocumento}" />
+            <div class="date-input-container">
+                <input class="form-control me-2 mt-3" type="date" name="fechaDesdeDocumento" aria-label="Search" th:value="${fechaDesdeDocumento}" />
+                <span class="date-input-label fw-bold">Desde</span>
+            </div>
+            
+            <div class="date-input-container">
+                <input class="form-control me-2 mt-3" type="date" name="fechaHastaDocumento" aria-label="Search" th:value="${fechaHastaDocumento}" />
+                <span class="date-input-label fw-bold">Hasta</span>
+            </div>
+            
             <input type="submit" class="btn btn-success me-2 mt-3" value="Buscar">
         </form>
         
@@ -68,6 +82,7 @@
             <thead>
             <tr>
                 <th>Numero</th>
+                <th>Estado</th>
                 <th>Fecha</th>
                 <th>Vehiculo</th>
                 <th>Marca</th>
@@ -80,17 +95,20 @@
             </thead>
             <tr th:each="orden :${orden}">
                 <td th:text="${orden.idOrden}">Mostrar Numero</td>
+                <td th:text="${orden.estadoActual?.nombre}">Mostrar Estado</td>
                 <td th:text="${orden.fechaDocumento}">Mostrar Fecha</td>
                 <td th:text="${orden.vehiculo.patente}">Mostrar Vehiculo</td> 
                 <td th:text="${orden.vehiculo.modelo.marca.nombre}">Mostrar Marca</td>
                 <td th:text="${orden.vehiculo.modelo.nombre}">Mostrar Modelo</td>
-                <td th:text="${orden.kilometros}">Mostrar Kilometraje/td>
+                <td th:text="${orden.formatearKilometros()}">Mostrar Kilometraje/td>
                 <td th:text="${orden.tecnico.legajo}">Mostrar Tecnico</td>
                 <td th:text="${orden.calcularTotal()}">Calcular Total</td>
                 <td><a class="btn btn-info" th:href="@{/ordenes/detallesOrden/} + ${orden.idOrden}" th:text="Detalles"/>
-                    <a class="btn btn-warning" th:href="@{/modificarOrden/} + ${orden.idOrden}" th:text="Editar"/>
+                    <a th:if="${orden.estadoActual?.nombre != 'FACTURADA'}" class="btn btn-warning" th:href="@{/modificarOrden/} + ${orden.idOrden}" th:text="Editar"/>
                     <a class="btn btn-success" th:href="@{/ordenes/imagenesOrden/} + ${orden.idOrden}" th:text="Imagenes"/>
-                    <a class="btn btn-danger" th:href="@{/eliminarOrden/} + ${orden.idOrden}" th:text="Eliminar"/></td>
+                    <a th:if="${orden.estadoActual?.nombre != 'FACTURADA'}" class="btn btn-danger" th:href="@{/eliminarOrden/} + ${orden.idOrden}" th:text="Eliminar"/>
+                    <a th:if="${orden.estadoActual?.nombre != 'FACTURADA' and orden.estadoActual?.nombre == 'COMPLETADA'} and ${orden.getDetallesOrdenesHTML != null}" class="btn btn-dark" th:href="@{/facturarOrden/} + ${orden.idOrden}" th:text="Facturar"/></td></td>
+
 
             </tr>
         </table>

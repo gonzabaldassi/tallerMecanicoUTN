@@ -22,6 +22,7 @@
                         <a class="nav-link active" aria-current="page" th:href="@{/ordenes}">Ordenes</a>
                         <a class="nav-link" th:href="@{/servicios}">Servicios</a>
                         <a class="nav-link" th:href="@{/tecnicos}">Tecnicos</a>
+                        <a class="nav-link" th:href="@{/estadisticas}">Estadisticas</a>
                     </div>
                 </div>
             </div>
@@ -29,9 +30,10 @@
     </header>
 
 <div class="container mt-4">
-    <h3>Listado DetallesOrden</h3>
+    <h3 th:if="${eliminada == null || !eliminada}">Listado DetallesOrden</h3>
+    <h3 th:if="${eliminada}">Listado detalles orden eliminada</h3>
     <br>
-    <a th:href="@{/ordenes/agregarDetalleOrden/} + ${orden.idOrden}" class="btn btn-primary">Agregar</a>
+    <a th:if="${eliminada == null || !eliminada} and ${orden.estadoActual?.nombre != 'FACTURADA'}" th:href="@{/ordenes/agregarDetalleOrden/} + ${orden.idOrden}" class="btn btn-primary">Agregar</a>
     <br>
     <div th:if="${detalleOrden != null and !detalleOrden.empty}">
         <table class="table">
@@ -42,18 +44,21 @@
                 <th>Precio final del servicio</th>
                 <th>Cantidad</th>
                 <th>Subtotal</th>
-                <th>Acciones</th>
+                <th th:if="${eliminada == null || !eliminada} and ${orden.estadoActual?.nombre != 'FACTURADA'}">Acciones</th>
+
             </tr>
             </thead>
 
             <tr th:each="detalleOrden :${detalleOrden}">
                 <td th:text="${detalleOrden.servicio.nombre}">Mostrar Servicio</td>
-                <td th:text="${detalleOrden.servicio.precio}">Mostrar Precio</td>
-                <td th:text="${detalleOrden.precioFinalServicio}">Mostrar Precio</td>
+                <td th:text="${detalleOrden.servicio.precioFormateado()}">Mostrar Precio</td>
+                <td th:text="${detalleOrden.precioFinalServicioFormateado()}">Mostrar Precio</td>
                 <td th:text="${detalleOrden.cantidad}">Mostrar Cantidad</td>
-                <td th:text="${detalleOrden.subtotal}">Mostrar Subtotal</td>
-                <td> <a class="btn btn-warning" th:href="@{/ordenes/modificarDetalleOrden/} + ${detalleOrden.idDetalleOrden} + '/' + ${orden.idOrden} " th:text="Editar"/>
-                    <a class="btn btn-danger" th:href="@{/ordenes/eliminarDetalleOrden/} + ${detalleOrden.idDetalleOrden} + '/' + ${orden.idOrden} " th:text="Eliminar"/></td>
+                <td th:text="${detalleOrden.subtotalFormateado()}">Mostrar Subtotal</td>
+                <td th:if="${eliminada == null || !eliminada}">
+                    <a th:if="${orden.estadoActual?.nombre != 'FACTURADA'}" class="btn btn-warning" th:href="@{/ordenes/modificarDetalleOrden/} + ${detalleOrden.idDetalleOrden} + '/' + ${orden.idOrden}" th:text="Editar"/>
+                    <a th:if="${orden.estadoActual?.nombre != 'FACTURADA'}"class="btn btn-danger" th:href="@{/ordenes/eliminarDetalleOrden/} + ${detalleOrden.idDetalleOrden} + '/' + ${orden.idOrden}" th:text="Eliminar"/>
+                </td>
             </tr>
         </table>
     </div>

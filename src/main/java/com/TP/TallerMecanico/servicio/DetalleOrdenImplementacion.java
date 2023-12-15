@@ -3,10 +3,8 @@ package com.TP.TallerMecanico.servicio;
 import com.TP.TallerMecanico.entidad.DetalleOrden;
 import com.TP.TallerMecanico.entidad.Orden;
 import com.TP.TallerMecanico.entidad.Servicio;
-import com.TP.TallerMecanico.entidad.Vehiculo;
 import com.TP.TallerMecanico.interfaz.IDetalleOrdenDao;
 import java.util.List;
-
 import com.TP.TallerMecanico.interfaz.IOrdenDao;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -102,5 +100,12 @@ public class DetalleOrdenImplementacion implements IDetalleOrdenService {
     public DetalleOrden buscarDetalleOrden(Long detalleOrden) {
         return detalleOrdenDao.findById(detalleOrden).orElse(null);
     }
+
+    @Override
+    @Transactional
+    public List<DetalleOrden> findByIdOrden(Long idOrden){
+        return detalleOrdenDao.findbyIdOrden(idOrden);
+    }
+
 
 }

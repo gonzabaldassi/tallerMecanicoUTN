@@ -1,17 +1,18 @@
 package com.TP.TallerMecanico.gestor;
 
+
 import com.TP.TallerMecanico.entidad.Servicio;
+import com.TP.TallerMecanico.interfaz.IServicioDao;
 import com.TP.TallerMecanico.servicio.IServicioService;
 import jakarta.validation.Valid;
-
 import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -21,6 +22,9 @@ public class GestorServicio {
     //El Autowired sirve para la inyeccion de dependencias 
     @Autowired
     private IServicioService servicioService;
+
+    @Autowired
+    private IServicioDao servicioDao;
 
     //Listar todos los servicios cuando la URL sea /servicios
     @GetMapping("/servicios")
@@ -44,6 +48,36 @@ public class GestorServicio {
         model.addAttribute("servicio", servicios);
         return "servicios";
     }
+
+    @GetMapping("/serviciosEliminados")
+    public String serviciosEliminados(Model model, @RequestParam(name="nombre", required=false) String nombre){
+        List<Servicio> servicios;
+
+        if (nombre != null) {
+            nombre = nombre.toUpperCase();
+        }
+        
+        //Busqueda
+        if (nombre != null) {
+            servicios=servicioDao.filtrarPorNombreYEstadoFalse(nombre);
+        }else{
+            servicios = servicioDao.findByEstadoFalse();
+        }
+        
+        
+        model.addAttribute("servicio", servicios);
+        
+        return "serviciosEliminados";
+    }
+
+
+    @GetMapping("/recuperarServicio/{idServicio}")
+    public String recuperarServicio(@PathVariable Long idServicio, Model model) {
+        Servicio servicio= servicioDao.findByIdServicioAndEstadoFalse(idServicio);
+        servicioService.activarServicio(servicio);
+        return "redirect:/servicios";
+    }
+
 
     //Permitir agregar un servicio cuando la URL sea /agregarServicio
     @GetMapping("/agregarServicio")

@@ -1,8 +1,7 @@
 package com.TP.TallerMecanico.interfaz;
+import com.TP.TallerMecanico.entidad.Estado;
 import com.TP.TallerMecanico.entidad.Orden;
 import com.TP.TallerMecanico.entidad.Tecnico;
-
-
 import java.time.LocalDate;
 import java.util.List;
 import org.springframework.data.jpa.repository.*;
@@ -11,12 +10,12 @@ import org.springframework.data.repository.query.Param;
 
 public interface IOrdenDao extends CrudRepository<Orden, Long> {
 
-
     @Modifying
     @Query("UPDATE Orden m SET m.estado = false WHERE m.idOrden = :idOrden") //Query para el Soft Delete
     void marcarComoEliminado(@Param("idOrden") Long idOrden);
 
     List<Orden> findByEstadoTrue();
+    List<Orden> findByEstadoFalse();
 
     @Modifying
     @Query("UPDATE Orden m SET m.estado = true WHERE m.idOrden = :idOrden")
@@ -29,9 +28,15 @@ public interface IOrdenDao extends CrudRepository<Orden, Long> {
     
     //QUERYS PARA BUSQUEDA
 
-    //@Query("SELECT o FROM Orden o WHERE o.vehiculo.modelo.id = :modeloId AND o.vehiculo.modelo.marca.id = :marcaId AND CAST(o.idOrden AS string) LIKE :numero%  AND o.fechaDOcumento =:fechaDocumento AND o.estado = true")
-    @Query("SELECT o FROM Orden o WHERE o.vehiculo.modelo.id = :modeloId AND o.vehiculo.modelo.marca.id = :marcaId AND o.idOrden = :numero AND o.fechaDocumento = :fechaDocumento AND o.estado = true")
-    List<Orden> filtrarOrdenPorMarcaYModeloYNumeroYFechaDocumento(@Param("marcaId") Long marcaId, @Param("modeloId") Long modeloId, @Param("numero") Long numero, @Param("fechaDocumento") LocalDate fechaDocumento);
+    //FILTROS PARA MARCA
+    @Query("SELECT o FROM Orden o WHERE o.vehiculo.modelo.id = :modeloId AND o.vehiculo.modelo.marca.id = :marcaId AND o.idOrden = :numero AND o.fechaDocumento BETWEEN :fechaDesdeDocumento AND :fechaHastaDocumento AND o.estado = true")
+    List<Orden> filtrarOrdenPorMarcaYModeloYNumeroYFechaDesdeYFechaHasta(@Param("marcaId") Long marcaId, @Param("modeloId") Long modeloId, @Param("numero") Long numero, @Param("fechaDesdeDocumento") LocalDate fechaDesdeDocumento, @Param("fechaHastaDocumento") LocalDate fechaHastaDocumento);
+
+    @Query("SELECT o FROM Orden o WHERE o.vehiculo.modelo.id = :modeloId AND o.vehiculo.modelo.marca.id = :marcaId AND o.idOrden = :numero AND o.fechaDocumento >= :fechaDesdeDocumento AND o.estado = true")
+    List<Orden> filtrarOrdenPorMarcaYModeloYNumeroYFechaDesde(@Param("marcaId") Long marcaId, @Param("modeloId") Long modeloId, @Param("numero") Long numero, @Param("fechaDesdeDocumento") LocalDate fechaDesdeDocumento );
+    
+    @Query("SELECT o FROM Orden o WHERE o.vehiculo.modelo.id = :modeloId AND o.vehiculo.modelo.marca.id = :marcaId AND o.idOrden = :numero AND o.fechaDocumento <= :fechaHastaDocumento AND o.estado = true")
+    List<Orden> filtrarOrdenPorMarcaYModeloYNumeroYFechaHasta(@Param("marcaId") Long marcaId, @Param("modeloId") Long modeloId, @Param("numero") Long numero, @Param("fechaHastaDocumento") LocalDate fechaHastaDocumento );
 
     @Query("SELECT o FROM Orden o WHERE o.vehiculo.modelo.id = :modeloId AND o.vehiculo.modelo.marca.id = :marcaId AND o.idOrden = :numero AND o.estado = true")
     List<Orden> filtrarOrdenPorMarcaYModeloYNumero(@Param("marcaId") Long marcaId, @Param("modeloId") Long modeloId, @Param("numero") Long numero);
@@ -39,41 +44,107 @@ public interface IOrdenDao extends CrudRepository<Orden, Long> {
     @Query("SELECT o FROM Orden o WHERE o.vehiculo.modelo.id = :modeloId AND o.vehiculo.modelo.marca.id = :marcaId AND o.estado = true")
     List<Orden> filtrarOrdenPorMarcaYModelo(@Param("marcaId") Long marcaId, @Param("modeloId") Long modeloId);
 
-    @Query("SELECT o FROM Orden o WHERE o.vehiculo.modelo.id = :modeloId AND o.vehiculo.modelo.marca.id = :marcaId AND o.fechaDocumento = :fechaDocumento AND o.estado = true")
-    List<Orden> filtrarOrdenPorMarcaYModeloYFechaDocumento(@Param("marcaId") Long marcaId, @Param("modeloId") Long modeloId, @Param("fechaDocumento") LocalDate fechaDocumento);
+    @Query("SELECT o FROM Orden o WHERE o.vehiculo.modelo.id = :modeloId AND o.vehiculo.modelo.marca.id = :marcaId AND o.fechaDocumento BETWEEN :fechaDesdeDocumento AND :fechaHastaDocumento AND o.estado = true")
+    List<Orden> filtrarOrdenPorMarcaYModeloYFechaDesdeYFechaHasta(@Param("marcaId") Long marcaId, @Param("modeloId") Long modeloId, @Param("fechaDesdeDocumento") LocalDate fechaDesdeDocumento, @Param("fechaHastaDocumento") LocalDate fechaHastaDocumento);
+    
+    @Query("SELECT o FROM Orden o WHERE o.vehiculo.modelo.id = :modeloId AND o.vehiculo.modelo.marca.id = :marcaId AND o.fechaDocumento >= :fechaDesdeDocumento AND o.estado = true")
+    List<Orden> filtrarOrdenPorMarcaYModeloYFechaDesde(@Param("marcaId") Long marcaId, @Param("modeloId") Long modeloId, @Param("fechaDesdeDocumento") LocalDate fechaDesdeDocumento);
+    
+    @Query("SELECT o FROM Orden o WHERE o.vehiculo.modelo.id = :modeloId AND o.vehiculo.modelo.marca.id = :marcaId AND o.fechaDocumento <= :fechaHastaDocumento AND o.estado = true")
+    List<Orden> filtrarOrdenPorMarcaYModeloYFechaHasta(@Param("marcaId") Long marcaId, @Param("modeloId") Long modeloId, @Param("fechaHastaDocumento") LocalDate fechaHastaDocumento);
 
     @Query("SELECT o FROM Orden o WHERE o.vehiculo.modelo.marca.id = :marcaId AND o.idOrden = :numero AND o.estado = true")
     List<Orden> filtrarOrdenPorMarcaYNumero(@Param("marcaId") Long marcaId, @Param("numero") Long numero);
 
-    @Query("SELECT o FROM Orden o WHERE o.vehiculo.modelo.marca.id = :marcaId AND o.idOrden = :numero AND o.fechaDocumento = :fechaDocumento AND o.estado = true")
-    List<Orden> filtrarOrdenPorMarcaYNumeroYFechaDocumento(@Param("marcaId") Long marcaId, @Param("numero") Long numero, @Param("fechaDocumento") LocalDate fechaDocumento);
+    @Query("SELECT o FROM Orden o WHERE o.vehiculo.modelo.marca.id = :marcaId AND o.idOrden = :numero AND o.fechaDocumento BETWEEN :fechaDesdeDocumento AND :fechaHastaDocumento AND o.estado = true")
+    List<Orden> filtrarOrdenPorMarcaYNumeroYFechaDesdeYFechaHasta(@Param("marcaId") Long marcaId, @Param("numero") Long numero, @Param("fechaDesdeDocumento") LocalDate fechaDesdeDocumento, @Param("fechaHastaDocumento") LocalDate fechaHastaDocumento );
+    
+    @Query("SELECT o FROM Orden o WHERE o.vehiculo.modelo.marca.id = :marcaId AND o.idOrden = :numero AND o.fechaDocumento >= :fechaDesdeDocumento AND o.estado = true")
+    List<Orden> filtrarOrdenPorMarcaYNumeroYFechaDesde(@Param("marcaId") Long marcaId, @Param("numero") Long numero, @Param("fechaDesdeDocumento") LocalDate fechaDesdeDocumento );
+    
+    @Query("SELECT o FROM Orden o WHERE o.vehiculo.modelo.marca.id = :marcaId AND o.idOrden = :numero AND o.fechaDocumento <= :fechaHastaDocumento AND o.estado = true")
+    List<Orden> filtrarOrdenPorMarcaYNumeroYFechaHasta(@Param("marcaId") Long marcaId, @Param("numero") Long numero, @Param("fechaHastaDocumento") LocalDate fechaHastaDocumento );
 
-    @Query("SELECT o FROM Orden o WHERE o.vehiculo.modelo.id = :modeloId AND o.idOrden = :numero AND o.fechaDocumento = :fechaDocumento AND o.estado = true")
-    List<Orden> filtrarOrdenPorModeloYNumeroYFechaDocumento(@Param("modeloId") Long modeloId, @Param("numero") Long numero, @Param("fechaDocumento") LocalDate fechaDocumento);
-
-    @Query("SELECT o FROM Orden o WHERE o.vehiculo.modelo.id = :modeloId AND o.idOrden = :numero AND o.estado = true")
-    List<Orden> filtrarOrdenPorModeloYNumero(@Param("modeloId") Long modeloId, @Param("numero") Long numero);
+    @Query("SELECT o FROM Orden o WHERE o.vehiculo.modelo.marca.id = :marcaId AND o.fechaDocumento BETWEEN :fechaDesdeDocumento AND :fechaHastaDocumento AND o.estado = true")
+    List<Orden> filtrarOrdenPorMarcaYFechaDesdeYFechaHasta(@Param("marcaId") Long marcaId, @Param("fechaDesdeDocumento") LocalDate fechaDesdeDocumento, @Param("fechaHastaDocumento") LocalDate fechaHastaDocumento);
+    
+    @Query("SELECT o FROM Orden o WHERE o.vehiculo.modelo.marca.id = :marcaId AND o.fechaDocumento >= :fechaDesdeDocumento AND o.estado = true")
+    List<Orden> filtrarOrdenPorMarcaYFechaDesde(@Param("marcaId") Long marcaId, @Param("fechaDesdeDocumento") LocalDate fechaDesdeDocumento );
+    
+    @Query("SELECT o FROM Orden o WHERE o.vehiculo.modelo.marca.id = :marcaId AND o.fechaDocumento <= :fechaHastaDocumento AND o.estado = true")
+    List<Orden> filtrarOrdenPorMarcaYFechaHasta(@Param("marcaId") Long marcaId, @Param("fechaHastaDocumento") LocalDate fechaHastaDocumento);
 
     @Query("SELECT o FROM Orden o WHERE o.vehiculo.modelo.marca.id = :marcaId AND o.estado = true")
     List<Orden> filtrarOrdenPorMarca(@Param("marcaId") Long marcaId);
 
+
+    //FILTROS PARA MODELOS
+    @Query("SELECT o FROM Orden o WHERE o.vehiculo.modelo.id = :modeloId AND o.idOrden = :numero AND o.fechaDocumento BETWEEN :fechaDesdeDocumento AND :fechaHastaDocumento AND o.estado = true")
+    List<Orden> filtrarOrdenPorModeloYNumeroYFechaDesdeYFechaHasta(@Param("modeloId") Long modeloId, @Param("numero") Long numero, @Param("fechaDesdeDocumento") LocalDate fechaDesdeDocumento, @Param("fechaHastaDocumento") LocalDate fechaHastaDocumento);
+    
+    @Query("SELECT o FROM Orden o WHERE o.vehiculo.modelo.id = :modeloId AND o.idOrden = :numero AND o.fechaDocumento >= :fechaDesdeDocumento AND o.estado = true")
+    List<Orden> filtrarOrdenPorModeloYNumeroYFechaDesde(@Param("modeloId") Long modeloId, @Param("numero") Long numero, @Param("fechaDesdeDocumento") LocalDate fechaDesdeDocumento);
+    
+    @Query("SELECT o FROM Orden o WHERE o.vehiculo.modelo.id = :modeloId AND o.idOrden = :numero AND o.fechaDocumento <= :fechaHastaDocumento AND o.estado = true")
+    List<Orden> filtrarOrdenPorModeloYNumeroYFechaHasta(@Param("modeloId") Long modeloId, @Param("numero") Long numero, @Param("fechaHastaDocumento") LocalDate fechaHastaDocumento);
+
+    @Query("SELECT o FROM Orden o WHERE o.vehiculo.modelo.id = :modeloId AND o.idOrden = :numero AND o.estado = true")
+    List<Orden> filtrarOrdenPorModeloYNumero(@Param("modeloId") Long modeloId, @Param("numero") Long numero);
+
+    @Query("SELECT o FROM Orden o WHERE o.vehiculo.modelo.id = :modeloId AND o.fechaDocumento BETWEEN :fechaDesdeDocumento AND :fechaHastaDocumento AND o.estado = true")
+    List<Orden> filtrarOrdenPorModeloYFechaDesdeYFechaHasta(@Param("modeloId") Long modeloId, @Param("fechaDesdeDocumento") LocalDate fechaDesdeDocumento, @Param("fechaHastaDocumento") LocalDate fechaHastaDocumento );
+    
+    @Query("SELECT o FROM Orden o WHERE o.vehiculo.modelo.id = :modeloId AND o.fechaDocumento >= :fechaDesdeDocumento AND o.estado = true")
+    List<Orden> filtrarOrdenPorModeloYFechaDesde(@Param("modeloId") Long modeloId, @Param("fechaDesdeDocumento") LocalDate fechaDesdeDocumento);
+   
+    @Query("SELECT o FROM Orden o WHERE o.vehiculo.modelo.id = :modeloId AND o.fechaDocumento <= :fechaHastaDocumento AND o.estado = true")
+    List<Orden> filtrarOrdenPorModeloYFechaHasta(@Param("modeloId") Long modeloId, @Param("fechaHastaDocumento") LocalDate fechaHastaDocumento );
+
     @Query("SELECT o FROM Orden o WHERE o.vehiculo.modelo.id = :modeloId AND o.estado = true")
     List<Orden> filtrarOrdenPorModelo(@Param("modeloId") Long modeloId);
+
+
+    //FILTRAR POR NUMERO
+    @Query("SELECT o FROM Orden o WHERE o.idOrden = :numero AND o.fechaDocumento BETWEEN :fechaDesdeDocumento AND :fechaHastaDocumento AND o.estado = true")
+    List<Orden> filtrarOrdenPorNumeroYFechaDesdeYFechaHasta(@Param("numero") Long numero, @Param("fechaDesdeDocumento") LocalDate fechaDesdeDocumento, @Param("fechaHastaDocumento") LocalDate fechaHastaDocumento);
+    
+    @Query("SELECT o FROM Orden o WHERE o.idOrden = :numero AND o.fechaDocumento >= :fechaDesdeDocumento AND o.estado = true")
+    List<Orden> filtrarOrdenPorNumeroYFechaDesde(@Param("numero") Long numero, @Param("fechaDesdeDocumento") LocalDate fechaDesdeDocumento);
+    
+    @Query("SELECT o FROM Orden o WHERE o.idOrden = :numero AND o.fechaDocumento <= :fechaHastaDocumento AND o.estado = true")
+    List<Orden> filtrarOrdenPorNumeroYFechaHasta(@Param("numero") Long numero, @Param("fechaHastaDocumento") LocalDate fechaHastaDocumento);
 
     @Query("SELECT o FROM Orden o WHERE o.idOrden = :numero AND o.estado = true")
     List<Orden> filtrarOrdenPorNumero(@Param("numero") Long numero);
 
-    @Query("SELECT o FROM Orden o WHERE o.fechaDocumento = :fechaDocumento AND o.estado = true")
-    List<Orden> filtrarOrdenPorFecha(@Param("fechaDocumento") LocalDate fechaDocumento);
+    
+    //FILTRAR POR FECHA
+    @Query("SELECT o FROM Orden o WHERE o.fechaDocumento BETWEEN :fechaDesdeDocumento AND :fechaHastaDocumento AND o.estado = true")
+    List<Orden> filtrarOrdenPorFechaDesdeYFechaHasta(@Param("fechaDesdeDocumento") LocalDate fechaDesdeDocumento,@Param("fechaHastaDocumento") LocalDate fechaHastaDocumento );
+   
+    @Query("SELECT o FROM Orden o WHERE o.fechaDocumento >= :fechaDesdeDocumento AND o.estado = true")
+    List<Orden> filtrarOrdenPorFechaDesde(@Param("fechaDesdeDocumento") LocalDate fechaDesdeDocumento);
+    
+    @Query("SELECT o FROM Orden o WHERE o.fechaDocumento <= :fechaHastaDocumento AND o.estado = true")
+    List<Orden> filtrarOrdenPorFechaHasta(@Param("fechaHastaDocumento") LocalDate fechaHastaDocumento );
 
-    @Query("SELECT o FROM Orden o WHERE o.vehiculo.modelo.marca.id = :marcaId AND o.fechaDocumento = :fechaDocumento AND o.estado = true")
-    List<Orden> filtrarOrdenPorMarcaYFechaDocumento(@Param("marcaId") Long marcaId, @Param("fechaDocumento") LocalDate fechaDocumento);
+    //Estadisticas 
+    @Query("SELECT MONTH(o.fechaDocumento) AS mes, COUNT(DISTINCT o.id) AS cantidadOrdenes, SUM(CAST(d.subtotal * (1 + o.vehiculo.modelo.marca.impuesto/100) AS DOUBLE)) AS recaudacion_total FROM Orden o JOIN o.detallesOrden d WHERE YEAR(o.fechaDocumento) = :year AND o.estado = true AND o.estadoActual = :estadoActual GROUP BY MONTH(o.fechaDocumento) ORDER BY MONTH(o.fechaDocumento)")
+    List<Object[]> obtenerIngresosYOrdenesMensuales(@Param("year") int year, @Param ("estadoActual") Estado estadoActual);
 
-    @Query("SELECT o FROM Orden o WHERE o.vehiculo.modelo.id = :modeloId AND o.fechaDocumento = :fechaDocumento AND o.estado = true")
-    List<Orden> filtrarOrdenPorModeloYFechaDocumento(@Param("modeloId") Long modeloId, @Param("fechaDocumento") LocalDate fechaDocumento);
+    @Query("SELECT MONTH(o.fechaDocumento) AS mes, SUM(d.subtotal * (1 + o.vehiculo.modelo.marca.impuesto/100)) AS montoTotal " +
+       "FROM Orden o " +
+       "JOIN DetalleOrden d ON o.idOrden = d.orden.idOrden " +
+       "WHERE YEAR(o.fechaDocumento) = :year  AND o.estado = true AND o.estadoActual = :estadoActual "+
+       "GROUP BY mes " +
+       "ORDER BY montoTotal DESC " +
+       "LIMIT 1")
+    List<Object[]> findMesMasRecaudado(@Param("year") int year, @Param ("estadoActual") Estado estadoActual);
 
-    @Query("SELECT o FROM Orden o WHERE o.idOrden = :numero AND o.fechaDocumento = :fechaDocumento AND o.estado = true")
-    List<Orden> filtrarOrdenPorNumeroYFechaDocumento(@Param("numero") Long numero, @Param("fechaDocumento") LocalDate fechaDocumento);
 
     List<Orden> findByFechaRegistro(LocalDate fechaOrden);
+
+    //QUERY PARA ORDENES ELIMINADAS
+    @Query("SELECT o FROM Orden o WHERE o.idOrden = :numero AND o.estado = false")
+    List<Orden> filtrarOrdenEliminadaPorNumero(@Param("numero") Long numero);
 }

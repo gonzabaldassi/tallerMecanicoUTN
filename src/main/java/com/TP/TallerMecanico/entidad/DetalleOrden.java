@@ -1,12 +1,11 @@
 package com.TP.TallerMecanico.entidad;
-
 import jakarta.persistence.*;
-// import jakarta.validation.constraints.NotEmpty;
-// import jakarta.validation.constraints.Pattern;
-// import jakarta.validation.constraints.Size;
-
 import java.io.Serializable;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
+import java.util.Locale;
 
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Pattern;
 import lombok.Data;
@@ -28,7 +27,29 @@ public class DetalleOrden implements Serializable {
 
     private int subtotal;
 
+    //Formateo del subtotal a miles
+    public String subtotalFormateado(){
+        
+        NumberFormat formato = DecimalFormat.getNumberInstance(Locale.getDefault());
+        ((DecimalFormat) formato).applyPattern("###,###.##");
+    
+        String subtotalFormateado = formato.format(subtotal);
+        return "$"+subtotalFormateado;
+    }
+
+    @Min(value = 0, message = "El precio final del servicio debe ser mayor o igual a cero")
     private int precioFinalServicio;
+
+    //Formateo del precioFinalServicio a miles
+    public String precioFinalServicioFormateado(){
+    
+        NumberFormat formato = DecimalFormat.getNumberInstance(Locale.getDefault());
+        ((DecimalFormat) formato).applyPattern("###,###.##");
+    
+        String precioFinalServicioFormateado = formato.format(precioFinalServicio);
+        return "$"+precioFinalServicioFormateado;
+    
+    }
     
     @ManyToOne
     @JoinColumn(name = "servicio_id")
@@ -42,7 +63,6 @@ public class DetalleOrden implements Serializable {
         int cantidad = Integer.parseInt(this.cantidad);
         return (cantidad * precioFinalServicio);
     }
-
 
     @Transient
     private String modo;

@@ -1,13 +1,12 @@
 package com.TP.TallerMecanico.servicio;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
-
+import com.TP.TallerMecanico.entidad.Estado;
 import com.TP.TallerMecanico.entidad.Orden;
 import com.TP.TallerMecanico.entidad.Tecnico;
 import com.TP.TallerMecanico.interfaz.IOrdenDao;
-
+import com.TP.TallerMecanico.interfaz.IEstadoDao;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,11 +20,20 @@ public class OrdenImplementacion implements IOrdenService {
     @Autowired
     private IOrdenDao ordenDao;
 
+    @Autowired
+    private IEstadoDao estadoDao;
+
     //A continuacion todos los metodos de la clase
     @Override
     @Transactional(readOnly = true)
-    public List<Orden> listarOrdenesFecha(LocalDate fechaOrden){
-        return ordenDao.findByFechaRegistro(fechaOrden);
+    public List<Orden> listarOrdenesFecha(LocalDate fechaDesde, LocalDate fechaHasta){
+        if (fechaDesde==null) {
+            return ordenDao.filtrarOrdenPorFechaHasta(fechaHasta);
+        }else if (fechaHasta == null) {
+            return ordenDao.filtrarOrdenPorFechaDesde(fechaDesde);
+        }else{
+            return ordenDao.filtrarOrdenPorFechaDesdeYFechaHasta(fechaDesde, fechaHasta);
+        }
     }
 
     @Override
@@ -46,6 +54,17 @@ public class OrdenImplementacion implements IOrdenService {
     @Transactional
     public void guardar(Orden orden) {
         orden.setFechaRegistro(LocalDate.now());
+
+        Estado estadoEnProgreso = estadoDao.findByNombre("EN PROGRESO");
+
+        if (estadoEnProgreso == null){
+            Estado enProgreso = new Estado();
+            enProgreso.setNombre("EN PROGRESO");
+            estadoDao.save(enProgreso);
+            orden.setEstadoActual(enProgreso);
+        } else {
+            orden.setEstadoActual(estadoEnProgreso);
+        }
         ordenDao.save(orden);
     }
 
@@ -77,12 +96,18 @@ public class OrdenImplementacion implements IOrdenService {
         ordenDao.marcarComoActivo(orden.getIdOrden());
     }
 
-    // @Override
-    // @Transactional
-    // public List<Orden> filtrarOrdenes(Long marcaId, Long modeloId, Long numero, LocalDate fechaDocumento) {
-    //     OrdenFiltrador ordenFiltrador = new OrdenFiltrador(ordenDao);
-    //     return ordenFiltrador.filtrarOrdenes(marcaId, modeloId, numero, fechaDocumento);
-    // }
+    public void facturarOrden(Orden orden){
+        Estado estadoFacturada = estadoDao.findByNombre("FACTURADA");
+        if (estadoFacturada == null){
+            Estado facturada = new Estado();
+            facturada.setNombre("FACTURADA");
+            estadoDao.save(facturada);
+            orden.setEstadoActual(facturada);
+        } else {
+            orden.setEstadoActual(estadoFacturada);
+        }
+        ordenDao.save(orden);
+    }
 
     @Override
     @Transactional   

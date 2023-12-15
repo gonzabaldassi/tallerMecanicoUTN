@@ -1,16 +1,10 @@
 package com.TP.TallerMecanico.entidad;
-
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
-
-// import jakarta.validation.constraints.*;
 import java.io.Serializable;
-import java.util.List;
-
 import lombok.Data;
-
 
 @Data
 @Entity
@@ -22,9 +16,9 @@ public class Tecnico implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long idTecnico;
-
    
     @NotEmpty(message = "El campo no debe estar vacio")
+    @Column(unique = true)
     @Pattern(regexp = "^[0-9]{1,8}$", message = "El Legajo debe contener solo números y tener un máximo de 8 dígitos")
     private String legajo;
     
